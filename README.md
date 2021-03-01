@@ -10,7 +10,7 @@
 <p align="center">
     <a href="https://www.mathworks.com/">
         <img src="https://img.shields.io/badge/Platform-python-blue.svg" alt="Platform">
-    </a>WindPlayer
+    </a>
     <a href="https://github.com/Dafeigy/WindMusic/blob/main/README.md">
         <img src="https://img.shields.io/badge/Readme-Clickhere-yellow.svg" alt="README">
     </a>
@@ -30,9 +30,10 @@
 
 
 
+
 # 🎵这是什么
 
-这是一款基于PyQt5开发的音乐播放器，接入了网易云抖音榜API完成曲目推送。
+这是一款基于PyQt5开发的音乐播放器，接入了网易云抖音榜API完成曲目推送。*~~其实这是一个为了后续的音乐播放器开发的一个简易版本~~。*
 
 对像我一样注意力容易分散的人，这款播放器很适合你~
 

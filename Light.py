@@ -3,11 +3,15 @@ from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 import qtawesome as qta
 import requests,traceback
 font=QtGui.QFont()
+song_font = QtGui.QFont()
 font.setFamily("STXihei")
 font.setPointSize(20)
+song_font.setFamily("STXihei")
+song_font.setPointSize(14)
 class Music(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
+        self.var_song_name = ''
         self.setFixedSize(400,200)
         self.setWindowTitle("🎧+📚=😊")
         self.setWindowOpacity(0.8)
@@ -36,7 +40,7 @@ class Music(QtWidgets.QMainWindow):
             #play_btn:hover,#pervious_btn:hover,#next_btn:hover{
                 background:	#696969;
                 border-radius:5px;
-                cursor:pointer;
+                
             }
         ''')
         self.close_btn.setStyleSheet('''
@@ -62,13 +66,9 @@ class Music(QtWidgets.QMainWindow):
         self.main_layout = QtWidgets.QGridLayout()
         self.main_widget.setLayout(self.main_layout)
 
-        # 标题 半成，接口部分未找到适合的
-        '''
-        slogan=requests.get('https://api.xygeng.cn/one').json()['data']['content']
-        self.title_lable = QtWidgets.QLabel(slogan)
-        self.title_lable.setFont(font)
-       '''
+       
         self.title_lable = QtWidgets.QLabel('🌥WindPlayer')
+        self.title_lable.setFont(font)
         self.title_lable.setStyleSheet('''
         QLabel{
                 color:"black";
@@ -76,6 +76,9 @@ class Music(QtWidgets.QMainWindow):
         ''')
         self.title_lable.setFont(font)
         self.title_lable.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.song_name = QtWidgets.QLabel('Nothing PLaying')
+        self.song_name.setFont(song_font)
         # 关闭按钮
         self.close_btn = QtWidgets.QPushButton("")  # 关闭按钮
         self.close_btn.clicked.connect(self.close_btn_event)
@@ -89,7 +92,7 @@ class Music(QtWidgets.QMainWindow):
         # 播放按钮
         play_icon = qta.icon("fa.play-circle-o",)
         self.play_btn = QtWidgets.QPushButton(play_icon,"")
-        self.play_btn.setIconSize(QtCore.QSize(80, 80))
+        self.play_btn.setIconSize(QtCore.QSize(50, 50))
         self.play_btn.setFixedSize(82,82)
         self.play_btn.setObjectName("play_btn")
         self.play_btn.clicked.connect(self.play_music)
@@ -106,7 +109,7 @@ class Music(QtWidgets.QMainWindow):
         # 下一首按钮
         next_icon = qta.icon("fa.chevron-right")
         self.next_btn = QtWidgets.QPushButton(next_icon,"")
-        self.next_btn.setIconSize(QtCore.QSize(80,80))
+        self.next_btn.setIconSize(QtCore.QSize(50,50))
         self.next_btn.setFixedSize(82,82)
         self.next_btn.setObjectName("next_btn")
         self.next_btn.clicked.connect(self.next_music)
@@ -127,14 +130,13 @@ class Music(QtWidgets.QMainWindow):
         self.process_bar.setTextVisible(False)
         self.process_bar.setStyleSheet('''QProgressBar {   border: 2px solid grey;   border-radius: 5px;   background-color: #FFFFFF;}QProgressBar::chunk {   background-color: #05B8CC;   width: 28px;}QProgressBar {   border: 2px solid grey;   border-radius: 5px;   text-align: center;}
         ''')
-
         self.main_layout.addWidget(self.close_btn,0,0,1,1)
         self.main_layout.addWidget(self.title_lable,0,1,1,1)
         self.main_layout.addWidget(self.status_label,1,0,1,1)
         self.main_layout.addWidget(self.play_btn, 1, 1, 1, 1)
         self.main_layout.addWidget(self.next_btn, 1, 2, 1, 1)
         self.main_layout.addWidget(self.process_bar,2,0,1,3)
-
+        self.main_layout.addWidget(self.song_name,3,0,1,3)
         self.setCentralWidget(self.main_widget)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
 
@@ -179,8 +181,10 @@ class Music(QtWidgets.QMainWindow):
                     # 设置状态标签为绿色
                     self.status_label.setStyleSheet('''QLabel{background:#72EA72;border-radius:5px;}''')
                     self.player.play()
+                    self.song_name.setText(f'{self.var_song_name} - Playing')
                 else:
                     self.next_music()
+                    self.song_name.setText(f'{self.var_song_name} - Playing')
             # 暂停音乐
             else:
                 # 设置状态为蓝色
@@ -188,8 +192,9 @@ class Music(QtWidgets.QMainWindow):
                 self.play_status = False
                 self.play_btn.setIcon(qta.icon("fa.play-circle-o"))
                 self.player.pause()
+                self.song_name.setText(f'{self.var_song_name} - Paused')
         except Exception as e:
-            print(repr(e))
+            pass
 
     # 下一首音乐
     def next_music(self):
@@ -210,14 +215,17 @@ class Music(QtWidgets.QMainWindow):
             self.get_music_thread.finished_signal.connect(self.init_player)
             self.get_music_thread.start()
         except Exception as e:
-            print(traceback.print_exc())
+            pass
 
     # 设置播放器
-    def init_player(self,url):
-        # print("获取到音乐链接：",url)
+    def init_player(self,url, song_name):
+        
+        self.var_song_name = song_name
+        self.song_name.setText(f'{self.var_song_name} - Playing')
         content = QMediaContent(QtCore.QUrl(url))
         self.player.setMedia(content)
         self.player.setVolume(50)
+
         self.player.play()
         self.duration = self.player.duration()  # 音乐的时长
         # 设置状态为绿色
@@ -252,23 +260,22 @@ class Music(QtWidgets.QMainWindow):
         try:
             if self.play_status is True:
                 self.process_value +=float(100 / (self.duration/1000))
-                #print("当前进度：",self.process_value)
-                self.process_bar.setValue(self.process_value)
+                self.process_bar.setValue(int(self.process_value))
         except Exception as e:
-            print('')
-            #print(repr(e))
+            pass
 
 
 # 异步子线程获取音乐链接
 class GetMusicThread(QtCore.QThread):
-    finished_signal = QtCore.pyqtSignal(str)
+    finished_signal = QtCore.pyqtSignal(str,str)
     def __init__(self,parent=None):
         super().__init__(parent)
     def run(self):
         reps = requests.post("https://api.uomg.com/api/rand.music?sort=抖音榜&format=json")
         # print(reps.json())
         file_url = reps.json()['data']['url']
-        self.finished_signal.emit(file_url)
+        song_name = reps.json()['data']['name']
+        self.finished_signal.emit(file_url,song_name)
 
 
 def main():

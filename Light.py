@@ -1,7 +1,7 @@
-from PyQt5 import QtWidgets,QtGui,QtCore,Qt
+from PyQt5 import QtWidgets,QtGui,QtCore
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 import qtawesome as qta
-import requests,traceback
+import requests
 
 
 font=QtGui.QFont()
@@ -103,10 +103,10 @@ class ToggleButton(QtWidgets.QWidget):
 
         if self.checked:
             painter.setPen(self.textColorOn)
-            painter.drawText(0, 0, self.width() / 2 + self.space * 2, self.height(), QtCore.Qt.AlignCenter, self.textOn)
+            painter.drawText(0, 0, int(self.width() / 2 + self.space * 2), int(self.height()), QtCore.Qt.AlignCenter, self.textOn)
         else:
             painter.setPen(self.textColorOff)
-            painter.drawText(self.width() / 2, 0,self.width() / 2 - self.space, self.height(), QtCore.Qt.AlignCenter, self.textOff)
+            painter.drawText(int(self.width() / 2), 0,int(self.width() / 2 - self.space), int(self.height()), QtCore.Qt.AlignCenter, self.textOff)
 
         painter.restore()
 
@@ -120,7 +120,7 @@ class ToggleButton(QtWidgets.QWidget):
         else:
             painter.setBrush(self.bgColorOff)
 
-        rect = QtCore.QRect(0, 0, self.width(), self.height())
+        rect = QtCore.QRect(0, 0, int(self.width()), int(self.height()))
         #半径为高度的一半
         radius = rect.height() / 2
         #圆的宽度为高度
@@ -146,7 +146,7 @@ class ToggleButton(QtWidgets.QWidget):
 
         rect = QtCore.QRect(0, 0, self.width(), self.height())
         sliderWidth = rect.height() - self.space * 2
-        sliderRect = QtCore.QRect(self.startX + self.space, self.space, sliderWidth, sliderWidth)
+        sliderRect = QtCore.QRect(int(self.startX + self.space), int(self.space), sliderWidth, sliderWidth)
         painter.drawEllipse(sliderRect)
 
         painter.restore()
@@ -155,9 +155,9 @@ class Music(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.var_song_name = ''
-        self.setFixedSize(400,200)
+        self.setFixedSize(500,250)
         self.setWindowTitle("🎧+📚=😊")
-        self.setWindowOpacity(0.8)
+        self.setWindowOpacity(0.75)
 
         self.init_ui()
         self.custom_style()
@@ -169,9 +169,6 @@ class Music(QtWidgets.QMainWindow):
         self.timer.setInterval(1000)
         self.timer.start()
         self.timer.timeout.connect(self.check_music_status)
-
-    def getState(self,checked):
-        print("checked=", checked)
 
     # 设置样式
     def custom_style(self):
@@ -205,8 +202,8 @@ class Music(QtWidgets.QMainWindow):
         ''')
 
     def init_ui(self):
+        
         # 窗口布局
-
         self.main_widget = QtWidgets.QWidget()
         self.main_widget.setObjectName("main_widget")
         self.main_layout = QtWidgets.QGridLayout()
@@ -223,6 +220,22 @@ class Music(QtWidgets.QMainWindow):
         self.title_lable.setFont(font)
         self.title_lable.setAlignment(QtCore.Qt.AlignCenter)
 
+        # About 
+        about_icon = qta.icon("fa.info-circle")
+        self.about_btn = QtWidgets.QPushButton(about_icon,"")
+        self.about_btn.setIconSize(QtCore.QSize(40,40))
+        self.about_btn.setFixedSize(40,40)
+        self.about_btn.setObjectName("about_btn")
+        self.about_btn.clicked.connect(self.show_info)
+        self.about_btn.setStyleSheet('''
+            #about_btn{
+                background:white;
+                border-radius:5px;
+            }
+            #about_btn:hover{
+                background:	#e9e9e9;
+            }
+        ''')
         # Toggle Button
         self.switchBtn = ToggleButton(self)
         self.switchBtn.checkedChanged.connect(self.switch_mode)
@@ -285,12 +298,14 @@ class Music(QtWidgets.QMainWindow):
 
         self.main_layout.addWidget(self.close_btn,0,0,1,1)
         self.main_layout.addWidget(self.title_lable,0,1,1,1)
+        self.main_layout.addWidget(self.about_btn, 0, 2, 1, 1)
+        self.main_layout.addWidget(self.switchBtn, 0,3,1,1)
         self.main_layout.addWidget(self.status_label,1,0,1,1)
         self.main_layout.addWidget(self.play_btn, 1, 1, 1, 1)
         self.main_layout.addWidget(self.next_btn, 1, 3, 1, 1)
         self.main_layout.addWidget(self.process_bar,2,0,1,4)
         self.main_layout.addWidget(self.song_name,3,0,1,4)
-        self.main_layout.addWidget(self.switchBtn, 0,3,1,1)
+        
         self.setCentralWidget(self.main_widget)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
 
@@ -298,7 +313,9 @@ class Music(QtWidgets.QMainWindow):
     def close_btn_event(self):
         self.close()
 
-
+    # About 弹窗
+    def show_info(self):
+        reply =  QtWidgets.QMessageBox.information(self, "💡About", r'Made by: <a href = "https://github.com/Dafeigy/">Cybersh1t</a><br>Issue reporting: <a href = "https://github.com/Dafeigy/WindMusic/issues/">Github</a><br>Email: <a href = "mailto:cybercolyce@gmail.com">GMail</a><br>')
     # 夜间模式切换
     def switch_mode(self, checked):
         if checked:
@@ -341,6 +358,16 @@ class Music(QtWidgets.QMainWindow):
             color:white;
                 }
                 ''')
+            self.about_btn.setStyleSheet('''
+                #about_btn{
+                    border:none;
+                    background: #202020;
+            }
+                #about_btn:hover{
+                    background:	#323232;
+                    border-radius:5px;
+            }'''
+            )
             
         else:
             self.main_widget.setStyleSheet('''
@@ -380,6 +407,16 @@ class Music(QtWidgets.QMainWindow):
             color:black;
                 }
                 ''')
+            self.about_btn.setStyleSheet(
+                '''
+                #about_btn{
+                    border:none;
+                    background: white;
+            }
+                #about_btn:hover{
+                    background:	#e9e9e9;
+            }'''
+            )
     # 鼠标长按事件
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -503,7 +540,6 @@ class GetMusicThread(QtCore.QThread):
         super().__init__(parent)
     def run(self):
         reps = requests.post("https://api.uomg.com/api/rand.music?sort=抖音榜&format=json")
-        # print(reps.json())
         file_url = reps.json()['data']['url']
         song_name = reps.json()['data']['name']
         self.finished_signal.emit(file_url,song_name)

@@ -1,7 +1,7 @@
-from PyQt5 import QtWidgets,QtGui,QtCore,Qt
+from PyQt5 import QtWidgets,QtGui,QtCore
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 import qtawesome as qta
-import requests,traceback
+import requests
 
 
 font=QtGui.QFont()
@@ -43,7 +43,6 @@ class ToggleButton(QtWidgets.QWidget):
         #self.timer.start(5)  # 设置计时间隔并启动
 
         self.setFont(QtGui.QFont("Microsoft Yahei", 10))
-        print(self.width())
 
         #self.resize(55,22)
 
@@ -104,10 +103,10 @@ class ToggleButton(QtWidgets.QWidget):
 
         if self.checked:
             painter.setPen(self.textColorOn)
-            painter.drawText(0, 0, self.width() / 2 + self.space * 2, self.height(), QtCore.Qt.AlignCenter, self.textOn)
+            painter.drawText(0, 0, int(self.width() / 2 + self.space * 2), int(self.height()), QtCore.Qt.AlignCenter, self.textOn)
         else:
             painter.setPen(self.textColorOff)
-            painter.drawText(self.width() / 2, 0,self.width() / 2 - self.space, self.height(), QtCore.Qt.AlignCenter, self.textOff)
+            painter.drawText(int(self.width() / 2), 0,int(self.width() / 2 - self.space), int(self.height()), QtCore.Qt.AlignCenter, self.textOff)
 
         painter.restore()
 
@@ -121,7 +120,7 @@ class ToggleButton(QtWidgets.QWidget):
         else:
             painter.setBrush(self.bgColorOff)
 
-        rect = QtCore.QRect(0, 0, self.width(), self.height())
+        rect = QtCore.QRect(0, 0, int(self.width()), int(self.height()))
         #半径为高度的一半
         radius = rect.height() / 2
         #圆的宽度为高度
@@ -147,7 +146,7 @@ class ToggleButton(QtWidgets.QWidget):
 
         rect = QtCore.QRect(0, 0, self.width(), self.height())
         sliderWidth = rect.height() - self.space * 2
-        sliderRect = QtCore.QRect(self.startX + self.space, self.space, sliderWidth, sliderWidth)
+        sliderRect = QtCore.QRect(int(self.startX + self.space), int(self.space), sliderWidth, sliderWidth)
         painter.drawEllipse(sliderRect)
 
         painter.restore()
@@ -170,9 +169,6 @@ class Music(QtWidgets.QMainWindow):
         self.timer.setInterval(1000)
         self.timer.start()
         self.timer.timeout.connect(self.check_music_status)
-
-    def getState(self,checked):
-        print("checked=", checked)
 
     # 设置样式
     def custom_style(self):

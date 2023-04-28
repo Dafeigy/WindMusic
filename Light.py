@@ -2,12 +2,155 @@ from PyQt5 import QtWidgets,QtGui,QtCore,Qt
 from PyQt5.QtMultimedia import QMediaContent,QMediaPlayer
 import qtawesome as qta
 import requests,traceback
+
+
 font=QtGui.QFont()
 song_font = QtGui.QFont()
 font.setFamily("STXihei")
 font.setPointSize(20)
 song_font.setFamily("STXihei")
 song_font.setPointSize(14)
+
+
+class ToggleButton():
+    checkedChanged = QtCore.pyqtSignal(bool)
+    def __init__(self,parent=None):
+        super(QtWidgets.QWidget, self).__init__(parent)
+
+        self.checked = False
+        self.bgColorOff = QtGui.QColor(255, 255, 255)
+        self.bgColorOn = QtGui.QColor(0, 0, 0)
+
+        self.sliderColorOff = QtGui.QColor(100, 100, 100)
+        self.sliderColorOn = QtGui.QColor(100, 184, 255)
+
+        self.textColorOff = QtGui.QColor(143, 143, 143)
+        self.textColorOn = QtGui.QColor(255, 255, 255)
+
+        self.textOff = "OFF"
+        self.textOn = "ON"
+
+        self.space = 2
+        self.rectRadius = 5
+
+        self.step = self.width() / 50
+        self.startX = 0
+        self.endX = 0
+
+        self.timer = QtCore.QTimer(self)  # 初始化一个定时器
+        self.timer.timeout.connect(self.updateValue)  # 计时结束调用operate()方法
+
+        #self.timer.start(5)  # 设置计时间隔并启动
+
+        self.setFont(QtGui.QFont("Microsoft Yahei", 10))
+
+        #self.resize(55,22)
+
+    def updateValue(self):
+        if self.checked:
+            if self.startX < self.endX:
+                self.startX = self.startX + self.step
+            else:
+                self.startX = self.endX
+                self.timer.stop()
+        else:
+            if self.startX  > self.endX:
+                self.startX = self.startX - self.step
+            else:
+                self.startX = self.endX
+                self.timer.stop()
+
+        self.update()
+
+
+    def mousePressEvent(self,event):
+        self.checked = not self.checked
+        #发射信号
+        self.checkedChanged.emit(self.checked)
+
+        # 每次移动的步长为宽度的50分之一
+        self.step = self.width() / 50
+        #状态切换改变后自动计算终点坐标
+        if self.checked:
+            self.endX = self.width() - self.height()
+        else:
+            self.endX = 0
+        self.timer.start(5)
+
+    def paintEvent(self, evt):
+        #绘制准备工作, 启用反锯齿
+            painter = QtGui.QPainter()
+
+
+
+            painter.begin(self)
+
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+
+            #绘制背景
+            self.drawBg(evt, painter)
+            #绘制滑块
+            self.drawSlider(evt, painter)
+            #绘制文字
+            self.drawText(evt, painter)
+
+            painter.end()
+
+
+    def drawText(self, event, painter):
+        painter.save()
+
+        if self.checked:
+            painter.setPen(self.textColorOn)
+            painter.drawText(0, 0, self.width() / 2 + self.space * 2, self.height(), Qt.AlignCenter, self.textOn)
+        else:
+            painter.setPen(self.textColorOff)
+            painter.drawText(self.width() / 2, 0,self.width() / 2 - self.space, self.height(), Qt.AlignCenter, self.textOff)
+
+        painter.restore()
+
+
+    def drawBg(self, event, painter):
+        painter.save()
+        painter.setPen(Qt.NoPen)
+
+        if self.checked:
+            painter.setBrush(self.bgColorOn)
+        else:
+            painter.setBrush(self.bgColorOff)
+
+        rect = QtCore.QRect(0, 0, self.width(), self.height())
+        #半径为高度的一半
+        radius = rect.height() / 2
+        #圆的宽度为高度
+        circleWidth = rect.height()
+
+        path = QtGui.QPainterPath()
+        path.moveTo(radius, rect.left())
+        path.arcTo(QtCore.QRectF(rect.left(), rect.top(), circleWidth, circleWidth), 90, 180)
+        path.lineTo(rect.width() - radius, rect.height())
+        path.arcTo(QtCore.QRectF(rect.width() - rect.height(), rect.top(), circleWidth, circleWidth), 270, 180)
+        path.lineTo(radius, rect.top())
+
+        painter.drawPath(path)
+        painter.restore()
+
+    def drawSlider(self, event, painter):
+        painter.save()
+
+        if self.checked:
+            painter.setBrush(self.sliderColorOn)
+        else:
+            painter.setBrush(self.sliderColorOff)
+
+        rect = QtCore.QRect(0, 0, self.width(), self.height())
+        sliderWidth = rect.height() - self.space * 2
+        sliderRect = QtCore.QRect(self.startX + self.space, self.space, sliderWidth, sliderWidth)
+        painter.drawEllipse(sliderRect)
+
+        painter.restore()
+
 class Music(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -18,7 +161,8 @@ class Music(QtWidgets.QMainWindow):
 
         self.init_ui()
         self.custom_style()
-        self.play_status = False # 播放状态初始化为否
+        self.mode = 'False'         # 初始UI设置为光亮模式
+        self.play_status = False    # 播放状态初始化为否
         self.player = QMediaPlayer(self)
 
         self.timer = QtCore.QTimer()
@@ -26,6 +170,8 @@ class Music(QtWidgets.QMainWindow):
         self.timer.start()
         self.timer.timeout.connect(self.check_music_status)
 
+    def getState(self,checked):
+        print("checked=", checked)
 
     # 设置样式
     def custom_style(self):
@@ -66,7 +212,7 @@ class Music(QtWidgets.QMainWindow):
         self.main_layout = QtWidgets.QGridLayout()
         self.main_widget.setLayout(self.main_layout)
 
-       
+        # 标题
         self.title_lable = QtWidgets.QLabel('🌥WindPlayer')
         self.title_lable.setFont(font)
         self.title_lable.setStyleSheet('''
@@ -74,11 +220,13 @@ class Music(QtWidgets.QMainWindow):
                 color:"black";
                 }
         ''')
+
+        # Toggle Button
+        self.switchBtn = ToggleButton(self)
+        self.switchBtn.checkedChanged.connect(self.switch_mode)
         self.title_lable.setFont(font)
         self.title_lable.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.song_name = QtWidgets.QLabel('Nothing PLaying')
-        self.song_name.setFont(song_font)
         # 关闭按钮
         self.close_btn = QtWidgets.QPushButton("")  # 关闭按钮
         self.close_btn.clicked.connect(self.close_btn_event)
@@ -86,7 +234,6 @@ class Music(QtWidgets.QMainWindow):
 
         # 音乐状态按钮
         self.status_label = QtWidgets.QLabel("")
-        # self.swith_btn.clicked.connect(self.swith_background) #此处还未完成 Darkmode 和 LightMode 的切换
         self.status_label.setFixedSize(15,15)
 
         # 播放按钮
@@ -130,6 +277,12 @@ class Music(QtWidgets.QMainWindow):
         self.process_bar.setTextVisible(False)
         self.process_bar.setStyleSheet('''QProgressBar {   border: 2px solid grey;   border-radius: 5px;   background-color: #FFFFFF;}QProgressBar::chunk {   background-color: #05B8CC;   width: 28px;}QProgressBar {   border: 2px solid grey;   border-radius: 5px;   text-align: center;}
         ''')
+
+        # 播放信息
+        self.song_name = QtWidgets.QLabel('Nothing Playing')
+        self.song_name.setFont(song_font)
+
+
         self.main_layout.addWidget(self.close_btn,0,0,1,1)
         self.main_layout.addWidget(self.title_lable,0,1,1,1)
         self.main_layout.addWidget(self.status_label,1,0,1,1)
@@ -144,11 +297,17 @@ class Music(QtWidgets.QMainWindow):
     def close_btn_event(self):
         self.close()
     # 夜间模式切换 （未完成 ）
-    def swich_background(self):
-        self.main_widget.setStyleSheet('''
-        QWidget{
-        "background-color: black"}
-        ''')
+    def switch_mode(self, checked):
+        if checked:
+            self.main_widget.setStyleSheet('''
+            QWidget{
+            "background-color: black"}
+            ''')
+        else:
+            self.main_widget.setStyleSheet('''
+            QWidget{
+            "background-color: white"}
+            ''')
     # 鼠标长按事件
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:

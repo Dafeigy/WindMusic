@@ -261,13 +261,13 @@ class Music(QtWidgets.QMainWindow):
         self.next_btn.setObjectName("next_btn")
         self.next_btn.clicked.connect(self.next_music)
         self.next_btn.setStyleSheet('''
-            QLabel{
-                background:white;
-                border-radius:5px;
-                }
-            QLabel:hover{
-                background:	#e9e9e9;
-                }''')
+                    #next_btn{
+                        background:white;
+                        border-radius:5px;
+                        }
+                    #next_btn:hover{
+                        background:	#e9e9e9;
+                        }''')
 
         # 进度条
         self.process_bar = QtWidgets.QProgressBar()
@@ -320,17 +320,14 @@ class Music(QtWidgets.QMainWindow):
             }
                 '''
             )
-            self.next_btn.setStyleSheet(
-                '''
-            QLabel{
-                border:none;
-                background: #202020;
-            }
-            QLabel:hover{
-                background:	#323232;
-                border-radius:5px;
-                '''
-            )
+            self.next_btn.setStyleSheet('''
+                    #next_btn{
+                        background:#202020;
+                        border-radius:5px;
+                        }
+                    #next_btn:hover{
+                        background:	#323232;
+                        }''')
             self.title_lable.setStyleSheet(
                 '''
             QLabel{
@@ -363,17 +360,14 @@ class Music(QtWidgets.QMainWindow):
             }
                 '''
             )
-            self.next_btn.setStyleSheet(
-                '''
-            QLabel{
-                border:none;
-                background: white;
-            }
-            QLabel:hover{
-                background:	#e9e9e9;
-                border-radius:5px;
-                '''
-            )
+            self.next_btn.setStyleSheet('''
+                    #next_btn{
+                        background:white;
+                        border-radius:5px;
+                        }
+                    #next_btn:hover{
+                        background:	#e9e9e9;
+                        }''')
             self.title_lable.setStyleSheet(
                 '''
             QLabel{

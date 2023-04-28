@@ -12,14 +12,14 @@ song_font.setFamily("STXihei")
 song_font.setPointSize(14)
 
 
-class ToggleButton():
+class ToggleButton(QtWidgets.QWidget):
     checkedChanged = QtCore.pyqtSignal(bool)
     def __init__(self,parent=None):
         super(QtWidgets.QWidget, self).__init__(parent)
 
         self.checked = False
-        self.bgColorOff = QtGui.QColor(255, 255, 255)
-        self.bgColorOn = QtGui.QColor(0, 0, 0)
+        self.bgColorOff = QtGui.QColor(230, 230, 230)
+        self.bgColorOn = QtGui.QColor(60, 60, 60)
 
         self.sliderColorOff = QtGui.QColor(100, 100, 100)
         self.sliderColorOn = QtGui.QColor(100, 184, 255)
@@ -103,17 +103,17 @@ class ToggleButton():
 
         if self.checked:
             painter.setPen(self.textColorOn)
-            painter.drawText(0, 0, self.width() / 2 + self.space * 2, self.height(), Qt.AlignCenter, self.textOn)
+            painter.drawText(0, 0, self.width() / 2 + self.space * 2, self.height(), QtCore.Qt.AlignCenter, self.textOn)
         else:
             painter.setPen(self.textColorOff)
-            painter.drawText(self.width() / 2, 0,self.width() / 2 - self.space, self.height(), Qt.AlignCenter, self.textOff)
+            painter.drawText(self.width() / 2, 0,self.width() / 2 - self.space, self.height(), QtCore.Qt.AlignCenter, self.textOff)
 
         painter.restore()
 
 
     def drawBg(self, event, painter):
         painter.save()
-        painter.setPen(Qt.NoPen)
+        painter.setPen(QtCore.Qt.NoPen)
 
         if self.checked:
             painter.setBrush(self.bgColorOn)
@@ -177,13 +177,13 @@ class Music(QtWidgets.QMainWindow):
     def custom_style(self):
         self.setStyleSheet('''
             #main_widget{
-                border-radius:5px;
+                
                 background:white;
             }
-            #play_btn,#pervious_btn,#next_btn{
+            #play_btn,#next_btn{
                 border:none;
             }
-            #play_btn:hover,#pervious_btn:hover,#next_btn:hover{
+            #play_btn:hover,#next_btn:hover{
                 background:	#696969;
                 border-radius:5px;
                 
@@ -220,12 +220,12 @@ class Music(QtWidgets.QMainWindow):
                 color:"black";
                 }
         ''')
+        self.title_lable.setFont(font)
+        self.title_lable.setAlignment(QtCore.Qt.AlignCenter)
 
         # Toggle Button
         self.switchBtn = ToggleButton(self)
         self.switchBtn.checkedChanged.connect(self.switch_mode)
-        self.title_lable.setFont(font)
-        self.title_lable.setAlignment(QtCore.Qt.AlignCenter)
 
         # 关闭按钮
         self.close_btn = QtWidgets.QPushButton("")  # 关闭按钮
@@ -244,11 +244,11 @@ class Music(QtWidgets.QMainWindow):
         self.play_btn.setObjectName("play_btn")
         self.play_btn.clicked.connect(self.play_music)
         self.play_btn.setStyleSheet('''
-                    QPushButton{
+                    #play_btn{
                         background:white;
                         border-radius:5px;
                         }
-                    QPushButton:hover{
+                    #play_btn:hover{
                         background:	#e9e9e9;
                         }''')
 
@@ -261,11 +261,11 @@ class Music(QtWidgets.QMainWindow):
         self.next_btn.setObjectName("next_btn")
         self.next_btn.clicked.connect(self.next_music)
         self.next_btn.setStyleSheet('''
-            QPushButton{
+            QLabel{
                 background:white;
                 border-radius:5px;
                 }
-            QPushButton:hover{
+            QLabel:hover{
                 background:	#e9e9e9;
                 }''')
 
@@ -287,27 +287,105 @@ class Music(QtWidgets.QMainWindow):
         self.main_layout.addWidget(self.title_lable,0,1,1,1)
         self.main_layout.addWidget(self.status_label,1,0,1,1)
         self.main_layout.addWidget(self.play_btn, 1, 1, 1, 1)
-        self.main_layout.addWidget(self.next_btn, 1, 2, 1, 1)
-        self.main_layout.addWidget(self.process_bar,2,0,1,3)
-        self.main_layout.addWidget(self.song_name,3,0,1,3)
+        self.main_layout.addWidget(self.next_btn, 1, 3, 1, 1)
+        self.main_layout.addWidget(self.process_bar,2,0,1,4)
+        self.main_layout.addWidget(self.song_name,3,0,1,4)
+        self.main_layout.addWidget(self.switchBtn, 0,3,1,1)
         self.setCentralWidget(self.main_widget)
         self.setWindowFlag(QtCore.Qt.FramelessWindowHint)  # 隐藏边框
 
     # 关闭程序
     def close_btn_event(self):
         self.close()
-    # 夜间模式切换 （未完成 ）
+
+
+    # 夜间模式切换
     def switch_mode(self, checked):
         if checked:
             self.main_widget.setStyleSheet('''
-            QWidget{
-            "background-color: black"}
+            #main_widget{
+                
+                background:#202020;
+            }
             ''')
+            self.play_btn.setStyleSheet(
+                '''
+            #play_btn{
+                border:none;
+                background: #202020;
+            }
+            #play_btn:hover{
+                background:	#323232;
+                border-radius:5px;
+            }
+                '''
+            )
+            self.next_btn.setStyleSheet(
+                '''
+            QLabel{
+                border:none;
+                background: #202020;
+            }
+            QLabel:hover{
+                background:	#323232;
+                border-radius:5px;
+                '''
+            )
+            self.title_lable.setStyleSheet(
+                '''
+            QLabel{
+            color:white;
+                }
+                '''
+            )
+            self.song_name.setStyleSheet(
+                '''
+            QLabel{
+            color:white;
+                }
+                ''')
+            
         else:
             self.main_widget.setStyleSheet('''
-            QWidget{
-            "background-color: white"}
+            #main_widget{
+                background:white;
+            }
             ''')
+            self.play_btn.setStyleSheet(
+                '''
+            #play_btn{
+                border:none;
+                background: white;
+            }
+            #play_btn:hover{
+                background:	#e9e9e9;
+                border-radius:5px;
+            }
+                '''
+            )
+            self.next_btn.setStyleSheet(
+                '''
+            QLabel{
+                border:none;
+                background: white;
+            }
+            QLabel:hover{
+                background:	#e9e9e9;
+                border-radius:5px;
+                '''
+            )
+            self.title_lable.setStyleSheet(
+                '''
+            QLabel{
+            color:black;
+                }
+                ''')
+            self.song_name.setStyleSheet(
+                '''
+            QLabel{
+            color:black;
+                }
+                ''')
     # 鼠标长按事件
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
